@@ -104,7 +104,12 @@ for elementcount in range(1,nel+1):
 #               basis and derivative of basis and gauss
 #=============================================================
 
-# basis here
+# N defines bilinear basis function
+# N = [N1, N2, N3, N4] 
+def basis(xi, eta):
+    N = 0.25 * np.array([(1-xi)*(1-eta), (1+xi)*(1-eta), (1+xi)*(1+eta), (1-xi)*(1+eta)])
+    return N
+
 
 def d_basis(xi,eta,coord):
 
@@ -126,7 +131,23 @@ def d_basis(xi,eta,coord):
     B     = invJ*dN
     return B, detJ
 
-# gauss here 
+
+# nqpts: number of quadrature points
+# qpts:  coordinates of the quadrature points
+# w:     quadrature weight
+def gauss(ngp):
+
+    if ngp == 1:
+        gp = 0
+        w = 2
+        return gp,w
+    elif ngp == 2:
+        gp = [-0.57735027,  0.57735027 ]  
+        w  = [1,            1          ]
+        return gp,w
+    else:
+        print("Error: This code supports only 1 and 2 quadrature points.")
+    return
 
 
 #=============================================================

@@ -36,22 +36,22 @@ ngp  = 2                      # number of gauss points
 nd = lpx+lpy -1               # number of nodes on essential boundary
 
 # essential B.C. (prescribed temperature)
-for i1 in range(0,lpx):
-    flags [i1,0] = 2
-    e_bc  [i1,0] = 0.0        # bottom edge
+for i in range(0,lpx):
+    flags [i,0] = 2
+    e_bc  [i,0] = 0.0        # bottom edge
 
-for i2 in range(lpx,nnp-nelx,lpx):
-    flags[i2,0] = 2
-    e_bc[i2,0]  = 0.0         # left edges
+for i in range(lpx,nnp-nelx,lpx):
+    flags[i,0] = 2
+    e_bc[i,0]  = 0.0         # left edges
 
 # natural B.C  - defined on edges positioned on natural boundary
 n_bc = np.zeros((4, nelx))
 nbc = nnp-nelx
-for i3 in range(0,nelx):
-    n_bc[0,i3] = nbc + i3
-    n_bc[1,i3] = nbc + 1 + i3
-    n_bc[2,i3] = 20
-    n_bc[3,i3] = 20
+for i in range(0,nelx):
+    n_bc[0,i] = nbc + i
+    n_bc[1,i] = nbc + 1 + i
+    n_bc[2,i] = 20
+    n_bc[3,i] = 20
 
 nbe = nelx
 
@@ -59,32 +59,40 @@ nbe = nelx
 #               Mesh Generation and IEN (mesh2d.m)
 #=============================================================
 
-x0 = np.linspace(0,1,lpx)
-y0 = 0.5*x0**2                    # the bottom geometry line
+# This function returns the physical coordinates of the nodes
+def physCoord(lpx, lpy):
+    
+    nnp = lpx * lpy
+    x0 = np.linspace(0,1,lpx)
+    y0 = 0.5*x0**2                    # the bottom geometry line
 
-y = np.zeros((nnp,1))
-for i4 in range(0,lpx):
-    y1 = np.linspace(y0[i4],1,lpy)
-    for j in range(0,lpy):        
-        y[i4 + j*lpx] = y1[j]     # collection of y coordinate
+    y = np.zeros((nnp,1))
+    for i in range(0,lpx):
+        y1 = np.linspace(y0[i],1,lpy)
+        for j in range(0,lpy):        
+            y[i + j*lpx] = y1[j]     # collection of y coordinate
 
-
-x = np.zeros((nnp,1))
-for i5 in range(0,lpy):        
-    for j1 in range(0,lpx):
-        x[j1 + i5*lpx] = x0[j1]   # collection of x coordinate
+    x = np.zeros((nnp,1))
+    for i in range(0,lpy):        
+        for j in range(0,lpx):
+            x[j + i*lpx] = x0[j]   # collection of x coordinate
+    return x, y
 
 
 # generate the IEN connectivity array
-IEN = np.zeros((4,nel))
-rowcount = 0
-for elementcount in range(1,nel+1):
-    IEN[0,elementcount-1] = elementcount + rowcount
-    IEN[1,elementcount-1] = elementcount + 1 + rowcount
-    IEN[2,elementcount-1] = elementcount + (lpx + 1) + rowcount
-    IEN[3,elementcount-1] = elementcount + (lpx) + rowcount
-    if np.mod(elementcount,lpx-1) == 0:
-        rowcount = rowcount + 1
+def connectivity(nel, lpx):
+
+    IEN = np.zeros((4,nel))
+    rowcount = 0
+    for elementcount in range(1,nel+1):
+        IEN[0,elementcount-1] = elementcount + rowcount
+        IEN[1,elementcount-1] = elementcount + 1 + rowcount
+        IEN[2,elementcount-1] = elementcount + (lpx + 1) + rowcount
+        IEN[3,elementcount-1] = elementcount + (lpx) + rowcount
+        if np.mod(elementcount,lpx-1) == 0:
+            rowcount = rowcount + 1
+            
+    return IEN
 
 #=============================================================
 #               Plot Mesh (plotmesh.m)
@@ -153,7 +161,20 @@ def gauss(ngp):
 #=============================================================
 #               stiffness, force element (heat2Delem.m)
 #=============================================================
+# TODO
+# e: number of element
+def heat2delem(e):
 
+    ke = np.zeros(nen, nen) # Initialize element conductance matrix
+    fe = np.zeros(nen, 1)   # Initialize element nodal source vector
+
+    # Get coordinates of element nodes 
+        # TODO: define IEN, x, and y in inputData
+    je = IEN(:,e)                       
+    C  = np.transpose( [ [x(je)] , [y(je)] ] )
+
+    # Get gauss points and weights
+    w, gp = gauss(nd.ngp)
 
 
 

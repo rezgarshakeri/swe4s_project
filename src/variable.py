@@ -23,12 +23,12 @@ f = np.zeros((neq,1))         # initialize nodal source vector
 d = np.zeros((neq,1))         # initialize nodal temperature vector
 K = np.zeros((neq,neq))       # initialize stiffness matrix
 
-flags= np.zeros((neq,1))      # array to set B.C flags 
+flags= np.zeros((neq,1), dtype=int)      # array to set B.C flags 
 e_bc = np.zeros((neq,1))      # essential B.C array
 P    = np.zeros((neq,1))      # initialize point source defined at a node
 s    = 6*np.ones((nen,nel))   # heat source
 
-ID   = np.zeros((neq,1))
+ID   = np.zeros((neq,1), dtype=int)
 d    = np.zeros((neq,1))
 # gauss Integration
 ngp  = 2                      # number of gauss points
@@ -53,6 +53,3 @@ for i in range(0,lpx):
     n_bc[1][i] = 20
 
 nbe = nelx
-
-print(n_bc)
-

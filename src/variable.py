@@ -45,14 +45,14 @@ for i in range(lpx,nnp-nelx,lpx):
     flags[i] = 2
     e_bc[i]  = -10.0         # left edges
 
-# natural B.C  - defined on edges positioned on natural boundary
-n_bc = np.zeros((4, nelx))
+# natural B.C  - on top edge
+n_bc = np.zeros((2, lpx))
 nbc = nnp-nelx
-for i in range(0,nelx):
-    n_bc[0][i] = nbc + i
-    n_bc[1][i] = nbc + 1 + i
-    n_bc[2][i] = 0
-    n_bc[3][i] = 0
+for i in range(0,lpx):
+    n_bc[0][i] = nnp-nelx +i
+    n_bc[1][i] = 20
 
 nbe = nelx
+
+print(n_bc)
 

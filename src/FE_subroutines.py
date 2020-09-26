@@ -124,23 +124,50 @@ def gauss(ngp):
 #=============================================================
 #               stiffness, force element (heat2Delem.m)
 #=============================================================
-# TODO
 # e: number of element
 def heat2delem(e):
 
-    ke = np.zeros(nen, nen) # Initialize element conductance matrix
-    fe = np.zeros(nen, 1)   # Initialize element nodal source vector
+    ke = np.zeros(vr.nen, vr.nen) # Initialize element conductance matrix
+    fe = np.zeros(vr.nen, 1)      # Initialize element nodal source vector
 
-    # Get coordinates of element nodes 
-        # TODO: define IEN, x, and y in inputData
-    je = IEN(:,e)                       
-    C  = np.transpose( [ [x(je)] , [y(je)] ] )
+    # Get coordinates of element nodes
+    IEN = connectivity(nel, vr.lpx)
+    for i in range(4):
+        je[i] = IEN[i][e]
+
+    x, y = physCoord(vr.lpx, vr.lpy)
+
+    C  = np.transpose( [ [ x(je[0]), x(je[1]), x(je[2]), x(je[3]) ] , 
+                         [ y(je[0]), y(je[1]), y(je[2]), y(je[3]) ] 
+                       ] )
 
     # Get gauss points and weights
-    w, gp = gauss(nd.ngp)
+    w, gp = gauss(vr.ngp)
 
+    # compute element conductance matrix and nodal flux vector 
+    for i in range vr.ngp:
+        for j in range vr.ngp:
+            # Get reference coordinates
+            eta = gp[i]           
+            psi = gp[j]
 
+            # Shape functions matrix
+            N = basis(eta, psi);
 
+            # Derivative of the shape functions 
+            B, detJ = d_basis(eta, psi, C)
+
+            # element conductance matrix
+            ke = ke + w[i] * w[j] * np.transpose(B) * vr.D * B * detJ
+
+            # compute s(x)
+            s = [ vr.s[0][e], vr.s[1][e], vr.s[2][e], vr.s[3][e] ]
+            se = N * s
+
+            # element nodal source vector
+            fe = fe + w[i] * w[j] * np.transpose(N) * se * detJ
+
+    return ke, fe
 
 #=============================================================
 #               Assembly (assembly.m)

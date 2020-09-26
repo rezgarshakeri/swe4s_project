@@ -49,10 +49,10 @@ for i in range(lpx,nnp-nelx,lpx):
 n_bc = np.zeros((4, nelx))
 nbc = nnp-nelx
 for i in range(0,nelx):
-    n_bc[0,i] = nbc + i
-    n_bc[1,i] = nbc + 1 + i
-    n_bc[2,i] = 0
-    n_bc[3,i] = 0
+    n_bc[0][i] = nbc + i
+    n_bc[1][i] = nbc + 1 + i
+    n_bc[2][i] = 0
+    n_bc[3][i] = 0
 
 nbe = nelx
 

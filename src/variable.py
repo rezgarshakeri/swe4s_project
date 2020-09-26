@@ -49,7 +49,7 @@ for i in range(lpx,nnp-nelx,lpx):
 n_bc = np.zeros((2, lpx))
 nbc = nnp-nelx
 for i in range(0,lpx):
-    n_bc[0][i] = nnp-nelx +i
+    n_bc[0][i] = nnp-lpx +i
     n_bc[1][i] = 20
 
 nbe = nelx

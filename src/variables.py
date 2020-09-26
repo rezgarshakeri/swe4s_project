@@ -29,7 +29,6 @@ P    = np.zeros((neq,1))      # initialize point source defined at a node
 s    = 6*np.ones((nen,nel))   # heat source
 
 ID   = np.zeros((neq,1), dtype=int)
-d    = np.zeros((neq,1))
 # gauss Integration
 ngp  = 2                      # number of gauss points
 

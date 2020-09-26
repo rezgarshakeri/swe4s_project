@@ -1,5 +1,6 @@
 import numpy as np
 import variables as vr
+import math
 
 #=============================================================
 #               Mesh Generation and IEN (mesh2d.m)
@@ -27,7 +28,7 @@ def physCoord(lpx, lpy):
 # generate the IEN connectivity array
 def connectivity(nel, lpx):
 
-    IEN = np.zeros((4,nel))
+    IEN = np.zeros((4,nel), dtype = int)
     rowcount = 0
     for elementcount in range(0,nel):
         IEN[0][elementcount] = elementcount + rowcount
@@ -52,7 +53,7 @@ def connectivity(nel, lpx):
 def setup_ID_LM (neq,nel,nd):
 
     IEN = connectivity(nel,vr.lpx)
-    LM = np.zeros((4,nel))
+    LM = np.zeros((4,nel), dtype = int)
     count  = 0
     count1 = 0
     for i in range(0,neq):
@@ -66,8 +67,7 @@ def setup_ID_LM (neq,nel,nd):
   
     for i in range(0,nel):
         for j in range(0,vr.nen):
-            ien = int(IEN[j][i])
-            LM[j][i] = vr.ID[ien]
+            LM[j][i] = vr.ID[IEN[j][i]]
 
     return LM
 
@@ -152,7 +152,45 @@ def heat2delem(e):
 #=============================================================
 #               source and flux (src_and_flux.m)
 #=============================================================
+def src_flux(neq, nbe, ngp):
+    for i in range(0,neq):
+        vr.f[vr.ID[i]] = vr.f[vr.ID[i]] + vr.P[vr.ID[i]]
 
+    x, y = physCoord(vr.lpx, vr.lpy)
+    for i in range(0,nbe):
+        fq = np.zeros((2,1))
+        n_bce = np.zeros((2,1))
+
+        node1 = int(vr.n_bc[0][i])
+        node2 = int(vr.n_bc[0][i+1])
+        n_bce[0] = vr.n_bc[1][i]
+        n_bce[1] = vr.n_bc[1][i+1]
+
+        x1 = x[node1]
+        y1 = y[node1]
+        x2 = x[node2]
+        y2 = y[node2]
+
+        length = math.sqrt((x2-x1)**2 + (y2-y1)**2)
+        J = length/2
+
+        w,gp = gauss(ngp)
+
+        for i in range(0,ngp):
+            N = np.zeros((2,1))
+            psi = gp[i]
+            N[0] = 0.5*(1-psi)
+            N[1] = 0.5*(1+psi)
+
+            flux = N[0]*n_bce[0] + N[1]*n_bce[1]
+            fq[0] = fq[0] + w[i]*N[0]*flux*J
+            fq[1] = fq[1] + w[i]*N[1]*flux*J
+
+        fq = -fq
+
+        vr.f[vr.ID[node1]] = vr.f[vr.ID[node1]] + fq[0]
+        vr.f[vr.ID[node2]] = vr.f[vr.ID[node2]] + fq[1]
+    return 
 
 
 

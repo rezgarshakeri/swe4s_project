@@ -196,8 +196,8 @@ def src_flux(neq, nbe, ngp):
 
         node1 = int(var.n_bc[0][i])
         node2 = int(var.n_bc[0][i+1])
-        n_bce[0] = var.n_bc[1][i]
-        n_bce[1] = var.n_bc[1][i+1]
+        n_bce[0][0] = var.n_bc[1][i]
+        n_bce[1][0] = var.n_bc[1][i+1]
 
         x1 = x[node1]
         y1 = y[node1]
@@ -212,27 +212,59 @@ def src_flux(neq, nbe, ngp):
         for i in range(0,ngp):
             N = np.zeros((2,1))
             psi = gp[i]
-            N[0] = 0.5*(1-psi)
-            N[1] = 0.5*(1+psi)
+            N[0][0] = 0.5*(1-psi)
+            N[1][0] = 0.5*(1+psi)
 
-            flux = N[0]*n_bce[0] + N[1]*n_bce[1]
-            fq[0] = fq[0] + w[i]*N[0]*flux*J
-            fq[1] = fq[1] + w[i]*N[1]*flux*J
+            flux = N[0][0]*n_bce[0][0] + N[1][0]*n_bce[1][0]
+            fq[0][0] = fq[0][0] + w[i]*N[0][0]*flux*J
+            fq[1][0] = fq[1][0] + w[i]*N[1][0]*flux*J
 
         fq = -fq
 
-        var.f[var.ID[node1]] = var.f[var.ID[node1]] + fq[0]
-        var.f[var.ID[node2]] = var.f[var.ID[node2]] + fq[1]
+        var.f[var.ID[node1]] = var.f[var.ID[node1]] + fq[0][0]
+        var.f[var.ID[node2]] = var.f[var.ID[node2]] + fq[1][0]
     return 
-
-
 
 #=============================================================
 #               Solve the system (solvedr.m)
 #=============================================================
+def solvedr(neq, nd):
 
+    K_E = np.zeros((nd,nd))
+    for i in range(nd):
+        for j in range(nd):
+            K_E[i][j] = var.K[i][j]
 
+    K_F = np.zeros((neq-nd,neq-nd))
+    for i in range(neq-nd):
+        for j in range(neq-nd):
+            K_F[i][j] = var.K[nd+i][nd+j]
 
+    K_EF = np.zeros((nd,neq-nd))
+    for i in range(nd):
+        for j in range(neq-nd):
+            K_EF[i][j] = var.K[i][nd+j]
+    K_EF  = np.transpose(K_EF)
+
+    f_E = np.zeros((neq-nd,1))
+    for i in range(neq-nd):
+        f_E[i][0] = var.f[nd+i][0]
+
+    d_E = np.zeros((nd,1))
+    for i in range(nd):
+        d_E[i][0] = var.d[i][0]
+
+    d_F = np.zeros((neq-nd,1))
+    d_F = np.linalg.solve(K_F, f_E - np.matmul(K_EF,d_E))
+    
+    d = np.zeros((neq,1))
+    for i in range(nd):
+        d[i][0] = d_E[i][0]
+
+    for i in range(neq-nd):
+        d[i+nd][0] = d_F[i][0]
+
+    return d
 
 #=============================================================
 #               get flux (get_flux.m)

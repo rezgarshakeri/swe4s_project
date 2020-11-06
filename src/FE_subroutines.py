@@ -103,7 +103,10 @@ def basis(xi, eta):
     ------
     an array of shape function as N = [N1, N2, N3, N4]
     """
-    N = 0.25 * np.array([[(1-xi)*(1-eta), (1+xi)*(1-eta), (1+xi)*(1+eta), (1-xi)*(1+eta)]])
+    N = 0.25 * np.array([[(1-xi)*(1-eta),
+                          (1+xi)*(1-eta),
+                          (1+xi)*(1+eta),
+                          (1-xi)*(1+eta)]])
     return N
 
 
@@ -123,8 +126,8 @@ def d_basis(xi, eta, coord):
     # Calculate the Grad(N) matrix
     dN = 0.25*np.array([[eta-1, 1-eta, 1+eta, -eta-1],
                         [xi-1, -xi-1, 1+xi, 1-xi]])
-
-    J = np.matmul(dN, coord)      # compute Jacobian matrix
+    # compute Jacobian matrix
+    J = np.matmul(dN, coord)
 
     detJ = J[0][0]*J[1][1] - J[0][1]*J[1][0]
     invJ = np.zeros((2, 2))
@@ -174,8 +177,11 @@ def heat2delem(e):
     ke: a 4x4 stiffness matrix
     fe: a 4x1 forcing vector
     """
-    ke = np.zeros((var.nen, var.nen))  # Initialize element conductance matrix
-    fe = np.zeros((var.nen, 1))      # Initialize element nodal source vector
+    # Initialize element conductance matrix
+    ke = np.zeros((var.nen, var.nen))
+
+    # Initialize element nodal source vector
+    fe = np.zeros((var.nen, 1))
 
     # Get coordinates of element nodes
     je = np.zeros((var.nel, 1), dtype=int)
@@ -184,30 +190,39 @@ def heat2delem(e):
         je[i][0] = IEN[i][e]
 
     x, y = physCoord(var.lpx, var.lpy)
-    C = np.array([[x[je[0][0]][0], x[je[1][0]][0], x[je[2][0]][0], x[je[3][0]][0]],
-                 [y[je[0][0]][0], y[je[1][0]][0], y[je[2][0]][0], y[je[3][0]][0]]])
+    C = np.array([[x[je[0][0]][0],
+                   x[je[1][0]][0],
+                   x[je[2][0]][0],
+                   x[je[3][0]][0]],
+                  [y[je[0][0]][0],
+                   y[je[1][0]][0],
+                   y[je[2][0]][0],
+                   y[je[3][0]][0]]])
     C = np.transpose(C)
 
     # Get gauss points and weights
     w, gp = gauss(var.ngp)
 
-    # compute element conductance matrix and nodal flux vector 
+    # compute element conductance matrix and nodal flux vector
     for i in range(var.ngp):
         for j in range(var.ngp):
             # Get reference coordinates
-            eta = gp[i]           
+            eta = gp[i]
             xi = gp[j]
 
             # Shape functions matrix
             N = basis(xi, eta)
+
             # Derivative of the shape functions
             B, detJ = d_basis(xi, eta, C)
+
             # element conductance matrix
-            ke = ke + w[i] * w[j] * np.matmul(np.matmul(np.transpose(B), var.D), B) * detJ
+            wwdetJ = w[i] * w[j] * detJ
+            ke = ke + wwdetJ * np.matmul(np.matmul(np.transpose(B), var.D), B)
 
             # compute s(x)
             s = np.array([[var.s[0][e]], [var.s[1][e]],
-            [var.s[2][e]], [var.s[3][e]]])
+                          [var.s[2][e]], [var.s[3][e]]])
             se = np.matmul(N, s)
 
             # element nodal source vector
@@ -233,10 +248,12 @@ def assembly(e):
     LM = setup_ID_LM(var.neq, var.nel, var.nd)
     for loop1 in range(var.nen):
         i = LM[loop1][e]
-        var.f[i] = var.f[i] + fe[loop1]  # Assemble forces
+        # Assemble forces
+        var.f[i] = var.f[i] + fe[loop1]
         for loop2 in range(var.nen):
             j = LM[loop2][e]
-            var.K[i][j] = var.K[i][j] + ke[loop1][loop2]  # Assemble stiffness
+            # Assemble stiffness
+            var.K[i][j] = var.K[i][j] + ke[loop1][loop2]
     return
 
 

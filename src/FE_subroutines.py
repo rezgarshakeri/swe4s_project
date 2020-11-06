@@ -103,7 +103,10 @@ def basis(xi, eta):
     ------
     an array of shape function as N = [N1, N2, N3, N4]
     """
-    N = 0.25 * np.array([[(1-xi)*(1-eta), (1+xi)*(1-eta), (1+xi)*(1+eta), (1-xi)*(1+eta)]])
+    N = 0.25 * np.array([[(1-xi)*(1-eta),
+                          (1+xi)*(1-eta),
+                          (1+xi)*(1+eta),
+                          (1-xi)*(1+eta)]])
     return N
 
 
@@ -184,18 +187,24 @@ def heat2delem(e):
         je[i][0] = IEN[i][e]
 
     x, y = physCoord(var.lpx, var.lpy)
-    C = np.array([[x[je[0][0]][0], x[je[1][0]][0], x[je[2][0]][0], x[je[3][0]][0]],
-                 [y[je[0][0]][0], y[je[1][0]][0], y[je[2][0]][0], y[je[3][0]][0]]])
+    C = np.array([[x[je[0][0]][0],
+                   x[je[1][0]][0],
+                   x[je[2][0]][0],
+                   x[je[3][0]][0]],
+                  [y[je[0][0]][0],
+                   y[je[1][0]][0],
+                   y[je[2][0]][0],
+                   y[je[3][0]][0]]])
     C = np.transpose(C)
 
     # Get gauss points and weights
     w, gp = gauss(var.ngp)
 
-    # compute element conductance matrix and nodal flux vector 
+    # compute element conductance matrix and nodal flux vector
     for i in range(var.ngp):
         for j in range(var.ngp):
             # Get reference coordinates
-            eta = gp[i]           
+            eta = gp[i]
             xi = gp[j]
 
             # Shape functions matrix
@@ -203,11 +212,12 @@ def heat2delem(e):
             # Derivative of the shape functions
             B, detJ = d_basis(xi, eta, C)
             # element conductance matrix
-            ke = ke + w[i] * w[j] * np.matmul(np.matmul(np.transpose(B), var.D), B) * detJ
+            wwdetJ = w[i] * w[j] * detJ
+            ke = ke + wwdetJ * np.matmul(np.matmul(np.transpose(B), var.D), B)
 
             # compute s(x)
             s = np.array([[var.s[0][e]], [var.s[1][e]],
-            [var.s[2][e]], [var.s[3][e]]])
+                          [var.s[2][e]], [var.s[3][e]]])
             se = np.matmul(N, s)
 
             # element nodal source vector

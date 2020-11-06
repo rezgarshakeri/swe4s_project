@@ -126,8 +126,8 @@ def d_basis(xi, eta, coord):
     # Calculate the Grad(N) matrix
     dN = 0.25*np.array([[eta-1, 1-eta, 1+eta, -eta-1],
                         [xi-1, -xi-1, 1+xi, 1-xi]])
-
-    J = np.matmul(dN, coord)      # compute Jacobian matrix
+    # compute Jacobian matrix
+    J = np.matmul(dN, coord)
 
     detJ = J[0][0]*J[1][1] - J[0][1]*J[1][0]
     invJ = np.zeros((2, 2))
@@ -177,8 +177,11 @@ def heat2delem(e):
     ke: a 4x4 stiffness matrix
     fe: a 4x1 forcing vector
     """
-    ke = np.zeros((var.nen, var.nen))  # Initialize element conductance matrix
-    fe = np.zeros((var.nen, 1))        # Initialize element nodal source vector
+    # Initialize element conductance matrix
+    ke = np.zeros((var.nen, var.nen))
+
+    # Initialize element nodal source vector
+    fe = np.zeros((var.nen, 1))
 
     # Get coordinates of element nodes
     je = np.zeros((var.nel, 1), dtype=int)

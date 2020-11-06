@@ -178,7 +178,7 @@ def heat2delem(e):
     fe: a 4x1 forcing vector
     """
     ke = np.zeros((var.nen, var.nen))  # Initialize element conductance matrix
-    fe = np.zeros((var.nen, 1))      # Initialize element nodal source vector
+    fe = np.zeros((var.nen, 1))        # Initialize element nodal source vector
 
     # Get coordinates of element nodes
     je = np.zeros((var.nel, 1), dtype=int)
@@ -209,8 +209,10 @@ def heat2delem(e):
 
             # Shape functions matrix
             N = basis(xi, eta)
+
             # Derivative of the shape functions
             B, detJ = d_basis(xi, eta, C)
+
             # element conductance matrix
             wwdetJ = w[i] * w[j] * detJ
             ke = ke + wwdetJ * np.matmul(np.matmul(np.transpose(B), var.D), B)
@@ -243,10 +245,12 @@ def assembly(e):
     LM = setup_ID_LM(var.neq, var.nel, var.nd)
     for loop1 in range(var.nen):
         i = LM[loop1][e]
-        var.f[i] = var.f[i] + fe[loop1]  # Assemble forces
+        # Assemble forces
+        var.f[i] = var.f[i] + fe[loop1]
         for loop2 in range(var.nen):
             j = LM[loop2][e]
-            var.K[i][j] = var.K[i][j] + ke[loop1][loop2]  # Assemble stiffness
+            # Assemble stiffness
+            var.K[i][j] = var.K[i][j] + ke[loop1][loop2]
     return
 
 

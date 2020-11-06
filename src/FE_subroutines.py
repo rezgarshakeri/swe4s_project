@@ -1,50 +1,58 @@
 import numpy as np
-import variables as var
 import math
 
 
-def physCoord(lpx, lpy):
+def physCoord(nelx, nely):
     """ This function return the physical coordinates of the nodes.
     Input:
     ------
-    lpx: number of nodes in x direction.
-    lpy: number of nodes in y direction.
+    nelx: number of elements in x direction.
+    nely: number of elements in y direction.
 
     Return:
     -------
     x,y the coordinates of each nodes
     """
-
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # number of nodes in y direction
+    lpy = nely + 1
+    # total number of nodes in a domain
+    nnp = lpx*lpy
+    # divide [0,1] by lpx (mesh in x direction)
     x0 = np.linspace(0, 1, lpx)
     y0 = 0.5 * x0**2               # the bottom geometry line
 
-    y = np.zeros((var.nnp, 1))
+    y = np.zeros((nnp, 1))
     for i in range(0, lpx):
+        # divide [0,1] by lpy (mesh in y direction)
         y1 = np.linspace(y0[i], 1, lpy)
         for j in range(0, lpy):
             y[i + j*lpx] = y1[j]   # collection of y coordinate
 
-    x = np.zeros((var.nnp, 1))
+    x = np.zeros((nnp, 1))
     for i in range(0, lpy):
         for j in range(0, lpx):
             x[j + i*lpx] = x0[j]   # collection of x coordinate
     return x, y
 
 
-# generate the IEN connectivity array
-def connectivity(nel, lpx):
+def connectivity(nelx, nely):
     """ This function returns the connectivity matrix.
 
     Input:
     ------
-    nel: number of elements in a domain
-    lpx: number of nodes in x direction
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
 
     Return:
     ------
     A connectivity matrix, IEN
     """
-
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # total number of elements in a domain
+    nel = nelx*nely
     IEN = np.zeros((4, nel), dtype=int)
     rowcount = 0
     for elementcount in range(0, nel):
@@ -58,38 +66,102 @@ def connectivity(nel, lpx):
     return IEN
 
 
-def setup_ID_LM(neq, nel, nd):
+def DirichletBCs(nelx, nely, T0_bottom, T0_left):
+    """ This function return the flags and e_bc arrays.
+
+    Input:
+    ------
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
+    T0_bottom: prescribed temperature on the bottom edge
+    T0_left: prescribed temperature on the left edge
+
+    Return:
+    -------
+    e_bc: array that contains the prescribed temperature on the boundary
+    flags: Boolean array to find which nodes has prescribed temperature
+    """
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # number of nodes in y direction
+    lpy = nely + 1
+    # total number of nodes in a domain
+    nnp = lpx*lpy
+    # degrees-of-freedom per node
+    ndof = 1
+    # number of equation
+    neq = nnp*ndof
+    # array to set B.C flags
+    flags = np.zeros((neq, 1), dtype=int)
+    # essential B.C array
+    e_bc = np.zeros((neq, 1))
+    # essential B.C. (prescribed temperature)
+    for i in range(0, lpx):
+        flags[i] = 2
+        e_bc[i] = T0_bottom        # bottom edge
+
+    for i in range(lpx, nnp - nelx, lpx):
+        flags[i] = 2
+        e_bc[i] = T0_left         # left edges
+
+    return e_bc, flags
+
+
+def setup_ID_LM(nelx, nely, T0_bottom, T0_left):
     """ This function return the ID array and LM matrix.
 
     Input:
     ------
-    neq: the number of equations we will solve
-    nel: the number of elements in the domain
-    nd: number of nodes on the boundary with Dirichlet condition
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
+    T0_bottom: prescribed temperature on the bottom edge
+    T0_left: prescribed temperature on the left edge
 
     Return:
     -------
     ID and LM matrices
     """
-
-    IEN = connectivity(nel, var.lpx)
+    # total number of elements in a domain
+    nel = nelx*nely
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # number of nodes in y direction
+    lpy = nely + 1
+    # total number of nodes in a domain
+    nnp = lpx*lpy
+    # degrees-of-freedom per node
+    ndof = 1
+    # number of element nodes (element is bilinear)
+    nen = 4
+    # number of equation
+    neq = nnp*ndof
+    # number of nodes on essential boundary (left+bottom edge)
+    nd = lpx+lpy - 1
+    # array the contains node numbers
+    ID = np.zeros((neq, 1), dtype=int)
+    # initialize nodal temperature vector
+    d0 = np.zeros((neq, 1))
+    # read connectivity matrix, IEN
+    IEN = connectivity(nelx, nely)
+    # read, prescribed temperature on the boundary and flags
+    e_bc, flags = DirichletBCs(nelx, nely, T0_bottom, T0_left)
     LM = np.zeros((4, nel), dtype=int)
     count = 0
     count1 = 0
     for i in range(0, neq):
-        if var.flags[i] == 2:
-            var.ID[i] = count
-            var.d[count] = var.e_bc[i]
+        if flags[i] == 2:
+            ID[i][0] = count
+            d0[count] = e_bc[i]
             count = count + 1
         else:
-            var.ID[i] = count1 + nd
+            ID[i][0] = count1 + nd
             count1 = count1 + 1
 
     for i in range(0, nel):
-        for j in range(0, var.nen):
-            LM[j][i] = var.ID[IEN[j][i]]
+        for j in range(0, nen):
+            LM[j][i] = ID[IEN[j][i]][0]
 
-    return LM
+    return d0, ID, LM
 
 
 def basis(xi, eta):
@@ -97,11 +169,15 @@ def basis(xi, eta):
 
     Input:
     ------
-    xi, eta are the natural coordinate system
+    xi, eta are the natural coordinate system.
+    natural coordinate system is always in the range [-1, 1]
+    So, after reading the coordinate of each element in (x,y)
+    we map (x,y) to (xi, eta) for integration.
 
     Return:
     ------
     an array of shape function as N = [N1, N2, N3, N4]
+    which defined on the natural coordinate (xi,eta)
     """
     N = 0.25 * np.array([[(1-xi)*(1-eta),
                           (1+xi)*(1-eta),
@@ -117,25 +193,32 @@ def d_basis(xi, eta, coord):
     Input:
     ------
     xi, eta are the natural coordinate system.
-    coord: coordinates of the node to compute Jacobian
+    coord: physical coordinate of element in (x, y)
+    we use (x, y) to compute Jacobian for maping to (xi, eta)
 
     Return:
     ------
     Derivative of shape function B=[dN/dx; dN/dy]
     """
-    # Calculate the Grad(N) matrix
+    # derivative of N, first row respect to xi,
+    # and second row of N respect to eta
     dN = 0.25*np.array([[eta-1, 1-eta, 1+eta, -eta-1],
                         [xi-1, -xi-1, 1+xi, 1-xi]])
     # compute Jacobian matrix
     J = np.matmul(dN, coord)
-
+    # determinate of Jacobian
     detJ = J[0][0]*J[1][1] - J[0][1]*J[1][0]
     invJ = np.zeros((2, 2))
     invJ[0][0] = J[1][1]
     invJ[0][1] = -J[0][1]
     invJ[1][0] = -J[1][0]
     invJ[1][1] = J[0][0]
+    # Inverse of Jacobian
     invJ = invJ/detJ
+    # derivative of N in (x,y) coordinate
+    # first row of B is dN/dx
+    # second row of B is dN/dy
+    # size B is 2x4
     B = np.matmul(invJ, dN)
     return B, detJ
 
@@ -150,8 +233,7 @@ def gauss(ngp):
     Return:
     ------
     w: weight of quadrature
-    gp: quadrature coordinates in the natural coordinate system (xi,eta) => in
-    [-1, 1] domain
+    gp: quadrature coordinates in the natural coordinate system (xi,eta)
     """
     if ngp == 1:
         gp = 0
@@ -165,31 +247,40 @@ def gauss(ngp):
         print("Error: This code supports only 1 and 2 quadrature points.")
 
 
-def heat2delem(e):
+def heat2delem(nelx, nely, ngp, s0, e):
     """ This function returns the stiffness, ke, and forcing function, fe.
 
     Input:
     ------
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
+    ngp: number of Gauss point you want for integration
     e: element number
+    s0: magnitude of the heat source
 
     Return:
     ------
     ke: a 4x4 stiffness matrix
     fe: a 4x1 forcing vector
     """
+    # total number of elements in a domain
+    nel = nelx*nely
+    # number of element nodes
+    nen = 4
     # Initialize element conductance matrix
-    ke = np.zeros((var.nen, var.nen))
-
+    ke = np.zeros((nen, nen))
     # Initialize element nodal source vector
-    fe = np.zeros((var.nen, 1))
+    fe = np.zeros((nen, 1))
 
     # Get coordinates of element nodes
-    je = np.zeros((var.nel, 1), dtype=int)
-    IEN = connectivity(var.nel, var.lpx)
-    for i in range(var.nen):
+    je = np.zeros((nel, 1), dtype=int)
+    IEN = connectivity(nelx, nely)
+    for i in range(nen):
+        # for each element e, we save the node numbers given in IEN
         je[i][0] = IEN[i][e]
-
-    x, y = physCoord(var.lpx, var.lpy)
+    # read the (x,y) coordinates of all elements
+    x, y = physCoord(nelx, nely)
+    # find the (x,y) coordinate of element e based on je above
     C = np.array([[x[je[0][0]][0],
                    x[je[1][0]][0],
                    x[je[2][0]][0],
@@ -201,11 +292,15 @@ def heat2delem(e):
     C = np.transpose(C)
 
     # Get gauss points and weights
-    w, gp = gauss(var.ngp)
-
+    w, gp = gauss(ngp)
+    # material property
+    k = 5                        # thermal conductivity
+    D = k*np.identity(2)         # conductivity matrix
+    s = s0*np.ones((nen, nel))   # heat source
     # compute element conductance matrix and nodal flux vector
-    for i in range(var.ngp):
-        for j in range(var.ngp):
+    # this part is loop over Gauss point to compute integral
+    for i in range(ngp):
+        for j in range(ngp):
             # Get reference coordinates
             eta = gp[i]
             xi = gp[j]
@@ -218,12 +313,12 @@ def heat2delem(e):
 
             # element conductance matrix
             wwdetJ = w[i] * w[j] * detJ
-            ke = ke + wwdetJ * np.matmul(np.matmul(np.transpose(B), var.D), B)
+            ke = ke + wwdetJ * np.matmul(np.matmul(np.transpose(B), D), B)
 
             # compute s(x)
-            s = np.array([[var.s[0][e]], [var.s[1][e]],
-                          [var.s[2][e]], [var.s[3][e]]])
-            se = np.matmul(N, s)
+            S = np.array([[s[0][e]], [s[1][e]],
+                          [s[2][e]], [s[3][e]]])
+            se = np.matmul(N, S)
 
             # element nodal source vector
             fe = fe + w[i] * w[j] * np.matmul(np.transpose(N), se) * detJ
@@ -231,57 +326,133 @@ def heat2delem(e):
     return ke, fe
 
 
-def assembly(e):
-    """ This function the assembled stiffness, K, and forcing, F.
+def assembly(nelx, nely, ngp, s0, T0_bottom, T0_left):
+    """ This function assembles stiffness, K, and forcing, F.
 
     Input:
     ------
-    e: element number
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
+    ngp: number of Gauss point you want for integration
+    s0: magnitude of the heat source
+    T0_bottom: prescribed temperature on the bottom edge
+    T0_left: prescribed temperature on the left edge
 
     Return:
     ------
     K: assembled stiffness matrix
     F: assembled forcing vector
     """
-    # Get element stiffness and force
-    ke, fe = heat2delem(e)
-    LM = setup_ID_LM(var.neq, var.nel, var.nd)
-    for loop1 in range(var.nen):
-        i = LM[loop1][e]
-        # Assemble forces
-        var.f[i] = var.f[i] + fe[loop1]
-        for loop2 in range(var.nen):
-            j = LM[loop2][e]
-            # Assemble stiffness
-            var.K[i][j] = var.K[i][j] + ke[loop1][loop2]
-    return
+    # total number of elements in a domain
+    nel = nelx*nely
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # number of nodes in y direction
+    lpy = nely + 1
+    # total number of nodes in a domain
+    nnp = lpx*lpy
+    # degrees-of-freedom per node
+    ndof = 1
+    # number of element nodes (element is bilinear)
+    nen = 4
+    # number of equation
+    neq = nnp*ndof
+    # get LM arrays
+    d0, ID, LM = setup_ID_LM(nelx, nely, T0_bottom, T0_left)
+    f = np.zeros((neq, 1))         # initialize global force vector
+    K = np.zeros((neq, neq))       # initialize global stiffness matrix
+    for e in range(nel):
+        # Get element stiffness and force for each element
+        ke, fe = heat2delem(nelx, nely, ngp, s0, e)
+        for loop1 in range(nen):
+            i = LM[loop1][e]
+            f[i] = f[i] + fe[loop1]  # Assemble forces
+            for loop2 in range(nen):
+                j = LM[loop2][e]
+                K[i][j] = K[i][j] + ke[loop1][loop2]  # Assemble stiffness
+
+    return K, f
 
 
-def src_flux(neq, nbe, ngp):
-    """ This function computes the flux on the boundary
-    that we have non-zero flux
+def NeumannBCs(nelx, nely, flux_top):
+    """ This function return the number of elements
+    on top boundary with Neumann BCs and array n_bc
+    which contains the prescribed flux on top edge
+
     Input:
     ------
-    neq: number of equations
-    nbe: number of element on the boundary with non-zero flux
-    ngp: number of Gauss point for integration
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
+    flux_top: prescribed flux on the top edge
+
+    Return:
+    -------
+    n_bc: array that contains the prescribed flux on the top boundary
+    nbe: number of element with non-zero flux on the top boundary
+    """
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # number of nodes in y direction
+    lpy = nely + 1
+    # total number of nodes in a domain
+    nnp = lpx*lpy
+    # natural B.C  - on top edge,
+    n_bc = np.zeros((2, lpx))
+    for i in range(0, lpx):
+        # node's numbers on top
+        n_bc[0][i] = nnp-lpx + i
+        # flux on those nodes
+        n_bc[1][i] = flux_top
+    # number of element with non-zero flux on the boundary
+    nbe = nelx
+
+    return nbe, n_bc
+
+
+def src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, F):
+    """ This function computes the flux on the top boundary
+    then adds to the global forcing vector, F, we have
+    Input:
+    ------
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
+    T0_bottom: prescribed temperature on the bottom edge
+    T0_left: prescribed temperature on the left edge
+    flux_top: prescribed flux on the top edge
+    ngp: number of Gauss point you want for integration
+    F: global forcing vector
 
     Return:
     ------
-    a forcing flux vector
+    updated global forcing vector
     """
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # number of nodes in y direction
+    lpy = nely + 1
+    # total number of nodes in a domain
+    nnp = lpx*lpy
+    # degrees-of-freedom per node
+    ndof = 1
+    # number of equation
+    neq = nnp*ndof
+    # initialize point source defined at a node
+    P = np.zeros((neq, 1))
+    d0, ID, LM = setup_ID_LM(nelx, nely, T0_bottom, T0_left)
+    nbe, n_bc = NeumannBCs(nelx, nely, flux_top)
+    # updated F, if we have external source on the nodes
     for i in range(0, neq):
-        var.f[var.ID[i]] = var.f[var.ID[i]] + var.P[var.ID[i]]
+        F[ID[i]] = F[ID[i]] + P[ID[i]]
 
-    x, y = physCoord(var.lpx, var.lpy)
+    x, y = physCoord(nelx, nely)
     for i in range(0, nbe):
         fq = np.zeros((2, 1))
         n_bce = np.zeros((2, 1))
 
-        node1 = int(var.n_bc[0][i])
-        node2 = int(var.n_bc[0][i+1])
-        n_bce[0][0] = var.n_bc[1][i]
-        n_bce[1][0] = var.n_bc[1][i+1]
+        node1 = int(n_bc[0][i])
+        node2 = int(n_bc[0][i+1])
+        n_bce[0][0] = n_bc[1][i]
+        n_bce[1][0] = n_bc[1][i+1]
 
         x1 = x[node1]
         y1 = y[node1]
@@ -304,48 +475,64 @@ def src_flux(neq, nbe, ngp):
             fq[1][0] = fq[1][0] + w[i]*N[1][0]*flux*J
 
         fq = -fq
+        # update F by adding flux on the top boundary
+        F[ID[node1]] = F[ID[node1]] + fq[0][0]
+        F[ID[node2]] = F[ID[node2]] + fq[1][0]
+    return F
 
-        var.f[var.ID[node1]] = var.f[var.ID[node1]] + fq[0][0]
-        var.f[var.ID[node2]] = var.f[var.ID[node2]] + fq[1][0]
-    return
 
-
-def solvedr(neq, nd):
+def solvedr(nelx, nely, K, F, d0):
     """ This function solves K*d=F and returns the d.
 
     Input:
     ------
-    neq: number of equations
-    nd: number of nodes on the boundary with Dirichlet condition
+    nelx: number of elements in x direction
+    nely: number of elements in y direction
+    K: global stiffness matrix
+    F: global forcig vector
+    d0: initialzed temperature
 
     Return:
     ------
     d: an array of the solution which is the temperatures
     at all nodes we have in the domain
     """
+    # number of nodes in x direction
+    lpx = nelx + 1
+    # number of nodes in y direction
+    lpy = nely + 1
+    # total number of nodes in a domain
+    nnp = lpx*lpy
+    # degrees-of-freedom per node
+    ndof = 1
+    # number of equation
+    neq = nnp*ndof
+    # number of nodes on essential boundary (left+bottom edge)
+    nd = lpx+lpy - 1
+
     K_E = np.zeros((nd, nd))
     for i in range(nd):
         for j in range(nd):
-            K_E[i][j] = var.K[i][j]
+            K_E[i][j] = K[i][j]
 
     K_F = np.zeros((neq-nd, neq-nd))
     for i in range(neq-nd):
         for j in range(neq-nd):
-            K_F[i][j] = var.K[nd+i][nd+j]
+            K_F[i][j] = K[nd+i][nd+j]
 
     K_EF = np.zeros((nd, neq-nd))
     for i in range(nd):
         for j in range(neq-nd):
-            K_EF[i][j] = var.K[i][nd+j]
+            K_EF[i][j] = K[i][nd+j]
     K_EF = np.transpose(K_EF)
 
     f_E = np.zeros((neq-nd, 1))
     for i in range(neq-nd):
-        f_E[i][0] = var.f[nd+i][0]
+        f_E[i][0] = F[nd+i][0]
 
     d_E = np.zeros((nd, 1))
     for i in range(nd):
-        d_E[i][0] = var.d[i][0]
+        d_E[i][0] = d0[i][0]
 
     d_F = np.zeros((neq-nd, 1))
     d_F = np.linalg.solve(K_F, f_E - np.matmul(K_EF, d_E))

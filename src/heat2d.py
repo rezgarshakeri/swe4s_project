@@ -1,6 +1,3 @@
-import math
-import numpy as np
-import math
 import FE_subroutines as FE
 import argparse
 

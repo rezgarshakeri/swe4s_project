@@ -2,7 +2,6 @@ import FE_subroutines as FE
 import argparse
 
 
-
 def main():
     """
     This code solves 2d steady state heat equation

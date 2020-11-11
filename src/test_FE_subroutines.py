@@ -99,6 +99,51 @@ class Testsetup_ID_LM(unittest.TestCase):
                 self.assertEqual(LM[i][j], LM_test[i][j])
 
 
+class Testbasis(unittest.TestCase):
+    """
+    3-----2
+    | (e) |
+    0-----1
+    """
+    # basis return and 4x1 array as N = [N0 N1 N2 N3], for nodes 0 to 3
+    # Origin of (xi, eta) coordinate is
+    # at the center of element e. the coordinates of the 4 nodes are
+    # node0 = (-1, 1), node1 = (1, -1), node2 = (1, 1), node3 = (-1, 1)
+    # for N = basis(-1, 1) N will be N = [[1. 0. 0. 0.]]
+    # for N = basis(1, 1) N will be N = [[0. 0. 1. 0.]]
+    # test shape function of node0
+    def test_basis0(self):
+        N_test0 = [[1., 0., 0., 0.]]
+        N = FE.basis(-1, -1)
+
+        for i in range(0, 4):
+            self.assertEqual(N[0][i], N_test0[0][i])
+
+    # test shape function of node1
+    def test_basis1(self):
+        N_test1 = [[0., 1., 0., 0.]]
+        N = FE.basis(1, -1)
+
+        for i in range(0, 4):
+            self.assertEqual(N[0][i], N_test1[0][i])
+
+    # test shape function of node2
+    def test_basis2(self):
+        N_test2 = [[0., 0., 1., 0.]]
+        N = FE.basis(1, 1)
+
+        for i in range(0, 4):
+            self.assertEqual(N[0][i], N_test2[0][i])
+
+    # test shape function of node3
+    def test_basis3(self):
+        N_test3 = [[0., 0., 0., 1.]]
+        N = FE.basis(-1, 1)
+
+        for i in range(0, 4):
+            self.assertEqual(N[0][i], N_test3[0][i])
+
+
 def main():
     unittest.main()
 

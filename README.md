@@ -25,4 +25,4 @@ python heat2d.py --num_elm_x 4 --num_elm_y 4 --T0_bottom 0 --T0_left -5 --heat_s
 
 `--flux_top`: heat flux on the top boundary
 
-This returns the solution array which represents the Temperature of all nodes in the discrete domain. 
+This returns the solution array which represents the Temperature of all nodes in the discrete domain.

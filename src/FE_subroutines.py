@@ -293,7 +293,7 @@ def heat2delem(nelx, nely, ngp, s0, e):
         # for each element e, we save the node numbers given in IEN
         je[i][0] = IEN[i][e]
     # read the (x,y) coordinates of all elements
-    x, y = physCoord(nelx, nely)
+    x, y = phys_coord(nelx, nely)
     # find the (x,y) coordinate of element e based on je above
     C = np.array([[x[je[0][0]][0],
                    x[je[1][0]][0],
@@ -458,7 +458,7 @@ def src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, F):
     for i in range(0, neq):
         F[ID[i]] = F[ID[i]] + P[ID[i]]
 
-    x, y = physCoord(nelx, nely)
+    x, y = phys_coord(nelx, nely)
     for i in range(0, nbe):
         fq = np.zeros((2, 1))
         n_bce = np.zeros((2, 1))

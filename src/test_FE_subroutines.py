@@ -80,6 +80,25 @@ class TestDirichlet_BCs(unittest.TestCase):
             self.assertEqual(flags[i][0], 2)
 
 
+class Testsetup_ID_LM(unittest.TestCase):
+    # see the documentation and code for what setup_ID_LM should returns
+    def test_setup_ID_LM_2elements(self):
+        d0_test = [[10.], [10.], [10.], [-10.], [0.], [0.]]
+        ID_test = [[0], [1], [2], [3], [4], [5]]
+        LM_test = [[0, 1], [1, 2], [4, 5], [3, 4]]
+        d0, ID, LM = FE.setup_ID_LM(2, 1, 10, -10)
+        # test initial temperature in the domain
+        for i in range(0, 6):
+            self.assertEqual(d0[i][0], d0_test[i][0])
+        # test ID array
+        for i in range(0, 6):
+            self.assertEqual(ID[i][0], ID_test[i][0])
+        # test LM array
+        for i in range(0, 4):
+            for j in range(0, 2):
+                self.assertEqual(LM[i][j], LM_test[i][j])
+
+
 def main():
     unittest.main()
 

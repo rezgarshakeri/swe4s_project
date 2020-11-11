@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 
-def physCoord(nelx, nely):
+def phys_coord(nelx, nely):
     """ This function return the physical coordinates of the nodes.
     Input:
     ------
@@ -11,7 +11,21 @@ def physCoord(nelx, nely):
 
     Return:
     -------
-    x,y the coordinates of each nodes
+    x,y the coordinates of each nodes.
+    The geometry we are working on is like
+    (for nelx = 2, nely = 2)
+    6---------7----------8
+    |         |   (3)    |
+    |   (2)   |      ----5
+    |      ---4-----/    |
+    3-----/   |   (1)    |
+    |         |      ----2
+    |   (0)   |     /
+    |     ----1----/
+    0----/
+    We have 4 elements (numbering in parenthesis ), and 9 nodes.
+    Bottom edge (0 to 2) is y=0.5x^2. (see unit test)
+    So this functions return x,y as 9x2 array for above mesh.
     """
     # number of nodes in x direction
     lpx = nelx + 1

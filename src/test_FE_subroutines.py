@@ -144,6 +144,53 @@ class Testbasis(unittest.TestCase):
             self.assertEqual(N[0][i], N_test3[0][i])
 
 
+class Testheat2d(unittest.TestCase):
+    # test the final solution
+    def test_heat2d_1(self):
+
+        nelx = 2
+        nely = 3
+        T0_bottom = 10
+        T0_left = -10
+        flux_top = 0
+        ngp = 2
+        s0 = 6
+        # assemble stiffness and forcing vector
+        K, f = FE.assembly(nelx, nely, ngp, s0, T0_bottom, T0_left)
+        # update forcing vector f by adding flux vector
+        F = FE.src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, f)
+        # get the prescribed temperature on the boundary nodes
+        d0, ID, LM = FE.setup_ID_LM(nelx, nely, T0_bottom, T0_left)
+        # find the nodal temperature on the domain
+        d = FE.solvedr(nelx, nely, K, F, d0)
+        # since we have nelx = 2, the first 3 entries of the d must be
+        # equal to prescribed temperature of the bottom edge
+        for i in range(0, nelx + 1):
+            self.assertEqual(d[i][0], T0_bottom)
+
+    def test_heat2d_2(self):
+
+        nelx = 2
+        nely = 2
+        T0_bottom = 5
+        T0_left = -2
+        flux_top = 0
+        ngp = 2
+        s0 = 0
+        # assemble stiffness and forcing vector
+        K, f = FE.assembly(nelx, nely, ngp, s0, T0_bottom, T0_left)
+        # update forcing vector f by adding flux vector
+        F = FE.src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, f)
+        # get the prescribed temperature on the boundary nodes
+        d0, ID, LM = FE.setup_ID_LM(nelx, nely, T0_bottom, T0_left)
+        # find the nodal temperature on the domain
+        d = FE.solvedr(nelx, nely, K, F, d0)
+        # since we have nelx = 2, the first 3 entries of the d must be
+        # equal to prescribed temperature of the bottom edge
+        for i in range(0, nelx + 1):
+            self.assertEqual(d[i][0], T0_bottom)
+
+
 def main():
     unittest.main()
 

@@ -58,6 +58,28 @@ class Testconnectivity(unittest.TestCase):
                 self.assertEqual(IEN_test[i][j], IEN[i][j])
 
 
+class TestDirichlet_BCs(unittest.TestCase):
+    # we test with same figure as we have for connectivity
+    # so, we set the Dirichlet boundary condition of bottom
+    # edge to 10 and left edge to -10.
+    # so we should have 3 nodes (0,1,2) with 10
+    # and 1 node (3) with -10 in e_bc array
+    # flags must be [2,2,2,2,0,0], since we have 4 nodes with BCs
+    def test_Dirichlet_BCs_2elements(self):
+        test_bottom = 10
+        test_left = -10
+        e_bc, flags = FE.Dirichlet_BCs(2, 1, 10, -10)
+        # test bottom edge
+        for i in range(0, 3):
+            self.assertEqual(e_bc[i][0], test_bottom)
+        # test left edge (for the above mesh we have only 1 nodes)
+        self.assertEqual(e_bc[3][0], test_left)
+
+        # test flags
+        for i in range(0, 4):
+            self.assertEqual(flags[i][0], 2)
+
+
 def main():
     unittest.main()
 

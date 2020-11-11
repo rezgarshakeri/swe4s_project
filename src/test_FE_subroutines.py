@@ -17,14 +17,45 @@ class Testphys_coord(unittest.TestCase):
 
     # Now we test for 4 elements (nelx=2, nely=2), exactly like
     # the figure in documentation of phys_coord
-    def test_phys_coord_4element(self):
+    def test_phys_coord_4elements(self):
         # at x=0.5 ==> y=0.5*(0.5)^2=0.125
         node1_y = 0.125
         node4_x = 0.5
         x, y = FE.phys_coord(2, 2)
-        # the output is x (9x1 array) and y (9x1 array)
+        # x (9x1 array) and y (9x1 array) since we have 9 nodes
         self.assertEqual(y[1][0], node1_y)
         self.assertEqual(x[4][0], node4_x)
+
+
+class Testconnectivity(unittest.TestCase):
+    """
+    (for nelx = 2, nely = 1)
+    Global numbering of nodes
+    3---------4----------5
+    |         |   (1)    |
+    |   (0)   |      ----2
+    |      ---1-----/
+    0-----/
+    Local numbering for element (e)
+    3-----2
+    | (e) |
+    0-----1
+    """
+    # we test the connectivity matrix for nelx=2, nely=1, as above
+    # connectivity returns an array which relate the local
+    # numbering to global numbering. Thenumber of rows of connectivity
+    # is 4 since we use 4-nodes element and number of columns of connectivity
+    # is equal to number of element we have.
+    # for example compare the node numbering of element (e) with
+    # element (1): 0-->1, 1-->2, 2-->5, 3-->4
+    # so second column of connectivity will be 1,2,5,4
+    def test_connectivity_2elements(self):
+        IEN_test = [[0, 1], [1, 2], [4, 5], [3, 4]]
+        IEN = FE.connectivity(2, 1)
+
+        for i in range(0, 4):
+            for j in range(0, 2):
+                self.assertEqual(IEN_test[i][j], IEN[i][j])
 
 
 def main():

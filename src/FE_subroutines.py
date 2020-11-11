@@ -190,7 +190,7 @@ def basis(xi, eta):
 
     Return:
     ------
-    an array of shape function as N = [N1, N2, N3, N4]
+    an array of shape function as N = [N0, N1, N2, N3]
     which defined on the natural coordinate (xi,eta)
     """
     N = 0.25 * np.array([[(1-xi)*(1-eta),

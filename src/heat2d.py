@@ -1,14 +1,14 @@
+"""
+This code solves 2d steady state heat equation
+using finite element numerical method.
+The output is the nodal Temperature.
+"""
+
 import FE_subroutines as FE
 import argparse
 
 
 def main():
-    """
-    This code solves 2d steady state heat equation
-    using finite element numerical method.
-    The output is the nodal temperature
-    """
-
     parser = argparse.ArgumentParser(description='Input for FE_subroutines')
 
     parser.add_argument('--num_elm_x',
@@ -27,13 +27,13 @@ def main():
                         dest='T0_bottom',
                         type=float,
                         default=10,
-                        help='Prescribed temperature on the bottom edge')
+                        help='Prescribed Temperature on the bottom edge')
 
     parser.add_argument('--T0_left',
                         dest='T0_left',
                         type=float,
                         default=-10,
-                        help='Prescribed temperature on the left edge')
+                        help='Prescribed Temperature on the left edge')
 
     parser.add_argument('--heat_source',
                         dest='heat_source',
@@ -54,17 +54,23 @@ def main():
     T0_left = args.T0_left
     s0 = args.heat_source
     flux_top = args.flux_top
-    # Gauss point, 2 is better than 1, has less errors
+
+    # Gauss point, 2 is better than 1 since it has less errors
     ngp = 2
-    # assemble stiffness and forcing vector
+
+    # Assemble stiffness and forcing vector
     K, f = FE.assembly(nelx, nely, ngp, s0, T0_bottom, T0_left)
-    # update forcing vector f by adding flux vector
+
+    # Update forcing vector f by adding flux vector
     F = FE.src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, f)
-    # get the prescribed temperature on the boundary nodes
+
+    # Get the prescribed Temperature on the boundary nodes
     d0, ID, LM = FE.setup_ID_LM(nelx, nely, T0_bottom, T0_left)
-    # find the nodal temperature on the domain
+
+    # Find the nodal Temperature on the domain
     d = FE.solvedr(nelx, nely, K, F, d0)
-    # print the results
+
+    # Print the nodal Temperature
     print(d)
 
 

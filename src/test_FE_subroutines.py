@@ -147,7 +147,7 @@ class Testbasis(unittest.TestCase):
 class Testheat2d(unittest.TestCase):
     # test the final solution
     def test_heat2d_1(self):
-        # assemble stiffness and forcing vector
+
         nelx = 2
         nely = 3
         T0_bottom = 10
@@ -155,6 +155,7 @@ class Testheat2d(unittest.TestCase):
         flux_top = 0
         ngp = 2
         s0 = 6
+        # assemble stiffness and forcing vector
         K, f = FE.assembly(nelx, nely, ngp, s0, T0_bottom, T0_left)
         # update forcing vector f by adding flux vector
         F = FE.src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, f)
@@ -167,8 +168,8 @@ class Testheat2d(unittest.TestCase):
         for i in range(0, nelx + 1):
             self.assertEqual(d[i][0], T0_bottom)
 
-def test_heat2d_2(self):
-        # assemble stiffness and forcing vector
+    def test_heat2d_2(self):
+
         nelx = 2
         nely = 2
         T0_bottom = 5
@@ -176,6 +177,7 @@ def test_heat2d_2(self):
         flux_top = 0
         ngp = 2
         s0 = 0
+        # assemble stiffness and forcing vector
         K, f = FE.assembly(nelx, nely, ngp, s0, T0_bottom, T0_left)
         # update forcing vector f by adding flux vector
         F = FE.src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, f)

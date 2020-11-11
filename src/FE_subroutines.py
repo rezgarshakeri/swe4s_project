@@ -80,7 +80,7 @@ def connectivity(nelx, nely):
     return IEN
 
 
-def DirichletBCs(nelx, nely, T0_bottom, T0_left):
+def Dirichlet_BCs(nelx, nely, T0_bottom, T0_left):
     """ This function return the flags and e_bc arrays.
 
     Input:

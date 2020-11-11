@@ -158,7 +158,7 @@ def setup_ID_LM(nelx, nely, T0_bottom, T0_left):
     # read connectivity matrix, IEN
     IEN = connectivity(nelx, nely)
     # read, prescribed temperature on the boundary and flags
-    e_bc, flags = DirichletBCs(nelx, nely, T0_bottom, T0_left)
+    e_bc, flags = Dirichlet_BCs(nelx, nely, T0_bottom, T0_left)
     LM = np.zeros((4, nel), dtype=int)
     count = 0
     count1 = 0

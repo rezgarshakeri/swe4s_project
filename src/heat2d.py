@@ -1,5 +1,4 @@
-"""
-This code solves 2d steady state heat equation
+""" This code solves 2d steady state heat equation
 using finite element numerical method.
 The output is the nodal Temperature.
 """

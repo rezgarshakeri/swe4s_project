@@ -573,7 +573,7 @@ def src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, F):
 
 
 def solvedr(nelx, nely, K, F, d0):
-    """ This function solves K*d=F and returns the d.
+    """ This function solves K*d=F and returns d.
 
     Input:
     ------

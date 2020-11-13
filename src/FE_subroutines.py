@@ -6,6 +6,31 @@ import numpy as np
 import math
 
 
+def setup(nelx, nely):
+    # Total number of elements in the domain
+    nel = nelx*nely
+
+    # Number of nodes in the x direction
+    lpx = nelx + 1
+
+    # Number of nodes in the y direction
+    lpy = nely + 1
+
+    # Total number of nodes in the domain
+    nnp = lpx*lpy
+
+    # degrees-of-freedom (dof) per node
+    ndof = 1
+
+    # Number of element nodes (bilinear elements)
+    nen = 4
+
+    # Number of equations
+    neq = nnp*ndof
+
+    return nel, lpx, lpy, nnp, ndof, nen, neq
+
+
 def phys_coord(nelx, nely):
     """ This function returns the physical coordinates of the nodes.
 
@@ -38,14 +63,8 @@ def phys_coord(nelx, nely):
     Bottom edge (0 to 2) is y=0.5x^2. (see src/test_subroutines.py)
     This function returns x,y as 9x2 array for the above mesh.
     """
-    # Number of nodes in the x direction
-    lpx = nelx + 1
-
-    # Number of nodes in the y direction
-    lpy = nely + 1
-
-    # Total number of nodes in the domain
-    nnp = lpx*lpy
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Divide [0,1] by lpx (mesh in the x direction)
     x0 = np.linspace(0, 1, lpx)
@@ -81,8 +100,8 @@ def connectivity(nelx, nely):
     A:      integer (2d array)
             connectivity matrix, IEN
     """
-    # Number of nodes in the x direction
-    lpx = nelx + 1
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Total number of elements in the domain
     nel = nelx*nely
@@ -120,20 +139,8 @@ def Dirichlet_BCs(nelx, nely, T0_bottom, T0_left):
     flags:      boolean (1d array)
                 indicates nodes that have prescribed temperature
     """
-    # Number of nodes in the x direction
-    lpx = nelx + 1
-
-    # Number of nodes in the y direction
-    lpy = nely + 1
-
-    # Total number of nodes in the domain
-    nnp = lpx*lpy
-
-    # degrees-of-freedom (dof) per node
-    ndof = 1
-
-    # Number of equations
-    neq = nnp*ndof
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Array to set B.C. flags
     flags = np.zeros((neq, 1), dtype=int)
@@ -176,26 +183,8 @@ def setup_ID_LM(nelx, nely, T0_bottom, T0_left):
     LM:         integer
                 dof for each element of ID
     """
-    # Total number of elements in the domain
-    nel = nelx*nely
-
-    # Number of nodes in the x direction
-    lpx = nelx + 1
-
-    # Number of nodes in the y direction
-    lpy = nely + 1
-
-    # Total number of nodes in the domain
-    nnp = lpx*lpy
-
-    # degrees-of-freedom (dof) per node
-    ndof = 1
-
-    # Number of element nodes (bilinear elements)
-    nen = 4
-
-    # Number of equations
-    neq = nnp*ndof
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Number of nodes on essential boundaries (left and bottom edges)
     nd = lpx + lpy - 1
@@ -354,11 +343,8 @@ def heat2delem(nelx, nely, ngp, s0, e):
     fe:         float (4x1 vector)
                 forcing vector
     """
-    # Total number of elements in the domain
-    nel = nelx*nely
-
-    # Number of element nodes
-    nen = 4
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Initialize element conductivity matrix
     ke = np.zeros((nen, nen))
@@ -449,26 +435,8 @@ def assembly(nelx, nely, ngp, s0, T0_bottom, T0_left):
     F:          float (1d array)
                 assembled forcing vector
     """
-    # Total number of elements in the domain
-    nel = nelx*nely
-
-    # Number of nodes in the x direction
-    lpx = nelx + 1
-
-    # Number of nodes in the y direction
-    lpy = nely + 1
-
-    # Total number of nodes in the domain
-    nnp = lpx*lpy
-
-    # degrees-of-freedom (dof) per node
-    ndof = 1
-
-    # Number of element nodes (bilinear elements)
-    nen = 4
-
-    # Number of equations
-    neq = nnp*ndof
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Get LM
     d0, ID, LM = setup_ID_LM(nelx, nely, T0_bottom, T0_left)
@@ -511,14 +479,8 @@ def NeumannBCs(nelx, nely, flux_top):
                 n_bc[0,:] => node number
                 n_bc[0,:] => prescribed flux for each node on the top boundary
     """
-    # Number of nodes in the x direction
-    lpx = nelx + 1
-
-    # Number of nodes in the y direction
-    lpy = nely + 1
-
-    # Total number of nodes in the domain
-    nnp = lpx*lpy
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # natural B.C. on the top edge
     n_bc = np.zeros((2, lpx))
@@ -560,20 +522,8 @@ def src_flux(nelx, nely, T0_bottom, T0_left, flux_top, ngp, F):
     F:          float (1d array)
                 global forcing vector (updated)
     """
-    # Number of nodes in the x direction
-    lpx = nelx + 1
-
-    # Number of nodes in the y direction
-    lpy = nely + 1
-
-    # Total number of nodes in the domain
-    nnp = lpx*lpy
-
-    # degrees-of-freedom (dof) per node
-    ndof = 1
-
-    # Number of equations
-    neq = nnp*ndof
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Initialize point source defined at a node
     P = np.zeros((neq, 1))
@@ -644,20 +594,8 @@ def solvedr(nelx, nely, K, F, d0):
                 the final solution
                 temperature at all nodes in the domain
     """
-    # Number of nodes in the x direction
-    lpx = nelx + 1
-
-    # Number of nodes in the y direction
-    lpy = nely + 1
-
-    # Total number of nodes in the domain
-    nnp = lpx*lpy
-
-    # degrees-of-freedom per node
-    ndof = 1
-
-    # Number of equation
-    neq = nnp*ndof
+    # Get the setup properties
+    nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)
 
     # Number of nodes on the essential boundaries (left and bottom edges)
     nd = lpx+lpy - 1

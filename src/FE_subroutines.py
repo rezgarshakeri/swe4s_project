@@ -4,6 +4,7 @@ implementing Finite Element Method.
 
 import numpy as np
 import math
+import sys
 
 
 def setup(nelx, nely):
@@ -317,7 +318,10 @@ def gauss(ngp):
         w = np.array([1, 1])
         return w, gp
     else:
-        print("Error: This code supports only 1 or 2 quadrature points.")
+        print("Error: This code supports only 2 quadrature points so far!")
+        sys.exit(1)
+
+    return None
 
 
 def heat2delem(nelx, nely, ngp, s0, e):

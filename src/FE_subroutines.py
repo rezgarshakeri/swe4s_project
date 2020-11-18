@@ -106,7 +106,7 @@ def connectivity(nelx, nely):
 
     # Total number of elements in the domain
     nel = nelx*nely
-    IEN = np.zeros((4, nel), dtype=int)
+    IEN = np.zeros((nen, nel), dtype=int)
     rowcount = 0
     for elementcount in range(0, nel):
         IEN[0][elementcount] = elementcount + rowcount

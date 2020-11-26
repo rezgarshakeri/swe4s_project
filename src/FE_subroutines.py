@@ -267,8 +267,8 @@ def d_basis(xi, eta, coord):
 
     """
     # Derivative of N
-    #   the first row with respect to xi
-    #   the second row with respect to eta
+    #   dN[0, :] = dN/dxi
+    #   dN[0, :] = dN/deta
     dN = 0.25*np.array([[eta-1, 1-eta, 1+eta, -eta-1],
                         [xi-1, -xi-1, 1+xi, 1-xi]])
 

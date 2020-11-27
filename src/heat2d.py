@@ -75,6 +75,8 @@ def main():
 
     plot.plot(nelx, nely, T0_bottom, T0_left, K, F)
 
+    return
+
 
 if __name__ == '__main__':
     main()

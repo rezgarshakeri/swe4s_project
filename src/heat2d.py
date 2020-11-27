@@ -73,7 +73,8 @@ def main():
     # Print the nodal Temperature
     print(d)
 
-    plot.plot(nelx, nely, T0_bottom, T0_left, K, F)
+    # Plot the 2d temperature distribution
+    plot.plot_temp(nelx, nely, T0_bottom, T0_left, K, F)
 
     return
 

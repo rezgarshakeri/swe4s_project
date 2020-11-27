@@ -7,7 +7,7 @@ This code can be run with:
 
 `python src/heat2d.py`
 
-One can change the number of elements in x and y directions, or change the value of boundary conditions with:
+One can change the number of elements in x and y directions, or the value of boundary conditions with:
 
 ```
 python src/heat2d.py --num_elm_x 20 --num_elm_y 20 --T0_bottom 50 --T0_left -50 --heat_source 400 --flux_top 100 --grid

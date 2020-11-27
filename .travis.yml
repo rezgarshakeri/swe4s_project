@@ -19,3 +19,4 @@ script:
     - pycodestyle src/test_FE_subroutines.py
     - pycodestyle src/heat2d.py
     - pycodestyle src/FE_subroutines.py
+    - pycodestyle src/plot.py    

@@ -4,6 +4,7 @@ implementing Finite Element Method.
 
 import numpy as np
 import math
+import sys
 
 
 def setup(nelx, nely):
@@ -105,15 +106,17 @@ def connectivity(nelx, nely):
 
     # Total number of elements in the domain
     nel = nelx*nely
-    IEN = np.zeros((4, nel), dtype=int)
+    IEN = np.zeros((nen, nel), dtype=int)
     rowcount = 0
-    for elementcount in range(0, nel):
-        IEN[0][elementcount] = elementcount + rowcount
-        IEN[1][elementcount] = elementcount + 1 + rowcount
-        IEN[2][elementcount] = elementcount + (lpx + 1) + rowcount
-        IEN[3][elementcount] = elementcount + (lpx) + rowcount
-        if np.mod(elementcount + 1, lpx - 1) == 0:
-            rowcount = rowcount + 1
+    # Connectivity matrix for 4-node elements
+    if nen == 4:
+        for elementcount in range(0, nel):
+            IEN[0][elementcount] = elementcount + rowcount
+            IEN[1][elementcount] = elementcount + 1 + rowcount
+            IEN[2][elementcount] = elementcount + (lpx + 1) + rowcount
+            IEN[3][elementcount] = elementcount + (lpx) + rowcount
+            if np.mod(elementcount + 1, lpx - 1) == 0:
+                rowcount = rowcount + 1
 
     return IEN
 
@@ -150,11 +153,11 @@ def Dirichlet_BCs(nelx, nely, T0_bottom, T0_left):
 
     # Essential B.C. (prescribed temperature)
     for i in range(0, lpx):
-        flags[i] = 2
+        flags[i] = 1
         e_bc[i] = T0_bottom       # bottom edge
 
     for i in range(lpx, nnp - nelx, lpx):
-        flags[i] = 2
+        flags[i] = 1
         e_bc[i] = T0_left         # left edge
 
     return e_bc, flags
@@ -204,7 +207,7 @@ def setup_ID_LM(nelx, nely, T0_bottom, T0_left):
     count = 0
     count1 = 0
     for i in range(0, neq):
-        if flags[i] == 2:
+        if flags[i] == 1:
             ID[i][0] = count
             d0[count] = e_bc[i]
             count = count + 1
@@ -264,8 +267,8 @@ def d_basis(xi, eta, coord):
 
     """
     # Derivative of N
-    #   the first row with respect to xi
-    #   the second row with respect to eta
+    #   dN[0, :] = dN/dxi
+    #   dN[0, :] = dN/deta
     dN = 0.25*np.array([[eta-1, 1-eta, 1+eta, -eta-1],
                         [xi-1, -xi-1, 1+xi, 1-xi]])
 
@@ -317,7 +320,10 @@ def gauss(ngp):
         w = np.array([1, 1])
         return w, gp
     else:
-        print("Error: This code supports only 1 or 2 quadrature points.")
+        print("Error: This code supports only 2 quadrature points so far!")
+        sys.exit(1)
+
+    return None
 
 
 def heat2delem(nelx, nely, ngp, s0, e):

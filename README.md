@@ -7,10 +7,10 @@ This code can be run with:
 
 `python src/heat2d.py`
 
-If you want to change the number of elements in x and y directions, or change the value of boundary conditions you can run with:
+One can change the number of elements in x and y directions, or the value of boundary conditions with:
 
 ```
-python heat2d.py --num_elm_x 4 --num_elm_y 4 --T0_bottom 0 --T0_left -5 --heat_source 5 --flux_top 10
+python src/heat2d.py --num_elm_x 20 --num_elm_y 20 --T0_bottom 50 --T0_left -50 --heat_source 400 --flux_top 100 --grid
 ```
 
 `--num_elm_x`: number of element in x direction
@@ -25,4 +25,12 @@ python heat2d.py --num_elm_x 4 --num_elm_y 4 --T0_bottom 0 --T0_left -5 --heat_s
 
 `--flux_top`: heat flux on the top boundary
 
-The output of the above command is the solution array which is the `Temperature` of all nodes in the discrete domain.
+`--grid`: plotting the grid if the user specifies
+
+The output of the above command contains the solution array which is the `Temperature` of all nodes in the discrete domain and a contour plot created illustrating the temperature distribution. The created plots for the shown command, with and without grid, is as following.
+
+**Temperature distribution with the grid:**
+<center><img src="images/ex_grid.png" width="300"/></center>  
+
+**Temperature distribution without the grid:**
+<center><img src="images/ex_nogrid.png" width="300"/></center>

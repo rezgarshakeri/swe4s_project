@@ -41,14 +41,14 @@ class Testconnectivity(unittest.TestCase):
     | (e) |
     0-----1
     """
-    # we test the connectivity matrix for nelx=2, nely=1, as above
-    # connectivity returns an array which relate the local
-    # numbering to global numbering. Thenumber of rows of connectivity
-    # is 4 since we use 4-nodes element and number of columns of connectivity
-    # is equal to number of element we have.
-    # for example compare the node numbering of element (e) with
+    # We test the connectivity matrix for nelx=2, nely=1, as above.
+    # Connectivity returns an array which relates the local
+    # numbering to the global numbering. The number of rows of the connectivity
+    # is 4 since we use 4-node elements and the number of the columns of
+    # the connectivity is equal to number of elements we have.
+    # For example, compare the node numbering of element (e) with
     # element (1): 0-->1, 1-->2, 2-->5, 3-->4
-    # so second column of connectivity will be 1,2,5,4
+    # So the second column of the connectivity will be 1,2,5,4
     def test_connectivity_2elements(self):
         IEN_test = [[0, 1], [1, 2], [4, 5], [3, 4]]
         IEN = FE.connectivity(2, 1)
@@ -77,7 +77,7 @@ class TestDirichlet_BCs(unittest.TestCase):
 
         # test flags
         for i in range(0, 4):
-            self.assertEqual(flags[i][0], 2)
+            self.assertEqual(flags[i][0], 1)
 
 
 class Testsetup_ID_LM(unittest.TestCase):

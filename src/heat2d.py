@@ -4,6 +4,7 @@ The output is the nodal Temperature.
 """
 
 import FE_subroutines as FE
+import plot
 import argparse
 
 
@@ -45,6 +46,9 @@ def main():
                         type=float,
                         default=0,
                         help='Prescribed flux on the top edge')
+    parser.add_argument('--grid',
+                        action="store_true",
+                        help='Option for plotting the grid')
     args = parser.parse_args()
 
     nelx = args.num_elm_x
@@ -53,6 +57,7 @@ def main():
     T0_left = args.T0_left
     s0 = args.heat_source
     flux_top = args.flux_top
+    grid = args.grid
 
     # Gauss point, 2 is better than 1 since it has less errors
     ngp = 2
@@ -71,6 +76,11 @@ def main():
 
     # Print the nodal Temperature
     print(d)
+
+    # Plot the 2d temperature distribution
+    plot.plot_temp(nelx, nely, T0_bottom, T0_left, K, F, grid)
+
+    return
 
 
 if __name__ == '__main__':

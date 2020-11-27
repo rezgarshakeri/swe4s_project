@@ -27,7 +27,7 @@ python src/heat2d.py --num_elm_x 20 --num_elm_y 20 --T0_bottom 50 --T0_left -50 
 
 `--grid`: plotting the grid if the user specifies
 
-The output of the above command contains the solution array which is the `Temperature` of all nodes in the discrete domain and the contour plot created in src directory. The created plots for the shown command, with and without grid, is as following.
+The output of the above command contains the solution array which is the `Temperature` of all nodes in the discrete domain and a contour plot created illustrating the temperature distribution. The created plots for the shown command, with and without grid, is as following.
 
 **Temperature distribution with the grid:**
 <center><img src="images/ex_grid.png" width="300"/></center>  

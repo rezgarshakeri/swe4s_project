@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import FE_subroutines as fe
 
 
-def plot_temp(nelx, nely, T0_bottom, T0_left, K, F):
+def plot_temp(nelx, nely, T0_bottom, T0_left, K, F, grid):
     """This function plots the Temperature distribution
     in a 2d domain.
 
@@ -25,6 +25,8 @@ def plot_temp(nelx, nely, T0_bottom, T0_left, K, F):
                 assembled stiffness matrix
     F:          float (1d array)
                 assembled forcing vector
+    grid:       boolean
+                true, if the user chooses to plot the grid
 
     Output:
     -------
@@ -56,19 +58,20 @@ def plot_temp(nelx, nely, T0_bottom, T0_left, K, F):
     for i in range(nnp):
         d1[i] = d[ID[i][0]][0]
 
-    # Creat and plot elements
-    xx = np.zeros(nen + 1)
-    yy = np.zeros(nen + 1)
-    dd = np.zeros(nen + 1)
-    for i in range(nel):
-        for j in range(nen):
-            xx[j] = x[IEN[j, i]]
-            yy[j] = y[IEN[j, i]]
-            dd[j] = d1[IEN[j, i]]
-        xx[nen] = x[IEN[0, i]]
-        yy[nen] = y[IEN[0, i]]
-        dd[nen] = d1[IEN[0, i]]
-        plt.fill(xx, yy, edgecolor='black', fill=False)
+    # Creat and plot elements/grid
+    if grid:
+        xx = np.zeros(nen + 1)
+        yy = np.zeros(nen + 1)
+        dd = np.zeros(nen + 1)
+        for i in range(nel):
+            for j in range(nen):
+                xx[j] = x[IEN[j, i]]
+                yy[j] = y[IEN[j, i]]
+                dd[j] = d1[IEN[j, i]]
+            xx[nen] = x[IEN[0, i]]
+            yy[nen] = y[IEN[0, i]]
+            dd[nen] = d1[IEN[0, i]]
+            plt.fill(xx, yy, edgecolor='black', fill=False)
 
     # Create and populate 2D Grid and the node's corresponding temperature
     X = np.zeros((lpx, lpy))

@@ -4,6 +4,7 @@ The output is the nodal Temperature.
 """
 
 import FE_subroutines as FE
+import plot
 import argparse
 
 
@@ -71,6 +72,8 @@ def main():
 
     # Print the nodal Temperature
     print(d)
+
+    plot.plot(nelx, nely, T0_bottom, T0_left, K, F)
 
 
 if __name__ == '__main__':

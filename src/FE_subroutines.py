@@ -99,7 +99,7 @@ def connectivity(nelx, nely):
     Output:
     ------
     A:      integer (2d array)
-            connectivity matrix, 
+            connectivity matrix, IEN
     """
     # Get the setup properties
     nel, lpx, lpy, nnp, ndof, nen, neq = setup(nelx, nely)

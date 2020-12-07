@@ -296,6 +296,12 @@ def d_basis(xi, eta, coord):
 
 def gauss(ngp):
     """ This function returns the quadrature weight and the quadrature points.
+    Conside an integral of f(x), int(f(x) dx) in the [-1,1] interval.
+    We can take this integral numerically by Gauss's method as
+    int(f(x) dx) = sum(w_i*f(q_i)) (summation over i index from 1 to N)
+    The gauss function here, gives quadrature weights (w_i) and
+    quadrature points (q_i).
+    N (ngp) is the number of Gauss points which works up to 2 here.
 
     Input:
     ------
@@ -337,10 +343,10 @@ def heat2delem(nelx, nely, ngp, s0, e):
                 number of elements in the y direction
     ngp:        integer
                 number of Gauss points for the integration
-    e:          integer
-                element number
     s0:         float
                 magnitude of the heat source
+    e:          integer
+                element number
 
     Output:
     ------
